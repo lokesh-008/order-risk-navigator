@@ -15,7 +15,7 @@ export function AiExplanationPanel({ order }: { order: EvaluatedOrder }) {
   });
 
   const result = q.data;
-  const success = result?.ok === true ? result : null;
+  const success = result && result.ok ? result : null;
   const fallbackReason = q.isError ? "AI service could not be reached." : result && !result.ok ? result.error : null;
 
   return (
