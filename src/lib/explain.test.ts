@@ -51,7 +51,7 @@ describe("explain input", () => {
     }
   });
   it("rejects input with an unknown status", () => {
-    const input = { ...toExplainInput(evaluateOrder(SAMPLE_ORDERS[0])), status: "LATE" };
+    const input = { ...toExplainInput(evaluateOrder(SAMPLE_ORDERS[0]!)), status: "LATE" };
     expect(explainInputSchema.safeParse(input).success).toBe(false);
   });
 });
