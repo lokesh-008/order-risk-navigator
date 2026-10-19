@@ -30,3 +30,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files and local secrets (never commit API keys)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.secrets/
+
+# Test coverage
+coverage/
