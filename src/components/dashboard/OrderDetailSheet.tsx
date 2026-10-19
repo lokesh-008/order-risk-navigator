@@ -2,6 +2,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Check, X, Minus, Cpu, Sparkles } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 import type { EvaluatedOrder } from "@/lib/orders";
+import { AiExplanationPanel } from "./AiExplanationPanel";
 
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -59,17 +60,7 @@ export function OrderDetailSheet({ order, onClose }: { order: EvaluatedOrder | n
                 </div>
               </section>
 
-              <section className="rounded-md border border-dashed border-ai/40 bg-ai-soft">
-                <div className="flex items-center gap-2 px-4 py-2">
-                  <Sparkles className="h-4 w-4 text-ai" aria-hidden />
-                  <h3 className="text-sm font-semibold text-ai">AI-generated explanation</h3>
-                  <span className="ml-auto text-[11px] text-ai">Sample · unverified</span>
-                </div>
-                <p className="px-4 pb-3 text-sm leading-relaxed">{order.aiExplanation}</p>
-                <p className="border-t border-ai/20 px-4 py-2 text-[11px] text-muted-foreground">
-                  Narrative only — may be inaccurate. Status is set by the deterministic checks above. No delivery date is guaranteed.
-                </p>
-              </section>
+              <AiExplanationPanel order={order} />
             </div>
           </>
         )}
