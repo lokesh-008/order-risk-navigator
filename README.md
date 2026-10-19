@@ -1,150 +1,228 @@
 # Order Delay Risk Assistant
 
-A dashboard that helps manufacturing operations teams find customer orders that may be delayed because of inventory shortages or replenishment arriving after the required dispatch date.
+An AI-assisted manufacturing dashboard that identifies customer orders at risk of delay due to inventory shortages or late replenishment.
 
-> **Prototype status:** runs on realistic **fictional sample data** (12 orders). No ERP, database or inventory system is connected.
+**Project status:** Prototype | **Data:** 12 fictional sample orders | **AI:** Google Gemini API
 
-## Problem statement
+## Overview
 
-Operations teams often discover inventory-driven delays too late, after the dispatch date has slipped. Stock on hand, inbound replenishment and dispatch dates live in different places, and checking them by hand is slow and error-prone.
+Manufacturing operations teams need to ensure that the required inventory is available before an order's dispatch date. Manually checking stock levels, shortages, and incoming replenishment can be time-consuming and error-prone.
 
-### Objectives
-- Flag orders as **On track**, **At risk** or **Needs review** using transparent, deterministic rules.
-- Explain each result in plain language and suggest a practical next step.
-- Keep rule-based decisions clearly separate from AI-generated narrative. The AI never sets or changes a status.
-- Never claim that an order is guaranteed to arrive on time.
+The Order Delay Risk Assistant evaluates order and inventory data using deterministic business rules, assigns a risk status, and uses AI to explain the result in plain language.
 
-## Key features
-- **Summary cards:** total, on-track, at-risk and needs-review counts. Clicking a card filters the table.
-- **Orders table:** search and status filtering across the sample orders.
-- **Order detail panel:** quantities, shortage, dispatch and replenishment dates, plus each deterministic check with pass / fail / not-determinable.
-- **AI explanation panel (Gemini):** a server-generated explanation and recommended action, with loading, success and fallback states.
-- **Validated AI output:** responses that are empty, malformed, too long or contradict the deterministic status are rejected. The panel then shows the sample explanation.
-- **Sample cases:** sufficient stock, insufficient stock with late or partial replenishment, and missing or conflicting data.
-- **Responsive layout.**
+The AI generates explanations and suggested actions only. **It does not determine or modify an order's status.**
 
-## Screenshots
+## Key Features
 
-> _Placeholders. Screenshots have not been added to the repository yet._
+- **Order monitoring:** View total orders and counts by risk status.
+- **Search and filtering:** Find orders using order IDs, SKUs, item names, customers, or status.
+- **Inventory risk evaluation:** Check stock availability, quantity shortages, and replenishment timing.
+- **Order details:** Inspect dispatch dates, replenishment information, calculated shortages, and individual rule checks.
+- **AI-generated explanations:** Receive a plain-language explanation and a recommended next step using Gemini.
+- **Output validation:** Reject empty, malformed, incomplete, excessively long, or contradictory AI responses.
+- **Fallback handling:** Display a sample explanation if the AI service fails, while preserving the deterministic order status.
+- **Human review:** Flag missing or conflicting data and require review for at-risk or uncertain cases.
+- **Responsive interface:** Use the dashboard across supported screen sizes.
 
-| View | Screenshot |
-|------|------------|
-| Dashboard overview | `docs/screenshots/dashboard.png` _(placeholder)_ |
-| Order detail with deterministic checks | `docs/screenshots/order-detail.png` _(placeholder)_ |
-| AI explanation (Gemini success) | `docs/screenshots/ai-success.png` _(placeholder)_ |
-| AI explanation (sample fallback) | `docs/screenshots/ai-fallback.png` _(placeholder)_ |
-
-## Technology stack
-- **Framework:** TanStack Start v1 (React 19, TanStack Router, server functions)
-- **Build tool:** Vite
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS v4, shadcn/ui (Radix UI) components, lucide-react icons
-- **Data fetching:** TanStack Query
-- **Validation:** Zod
-- **AI:** Google Gemini API (`gemini-2.5-flash`), called only from server-side code
-- **Testing:** Vitest, Testing Library, jsdom
-- **Runtime target:** Cloudflare Workers (edge)
-
-## System architecture and workflow
+## How It Works
 
 ```text
-Sample orders (src/lib/orders.ts)
-        |
-        v
-evaluateOrder()  -- deterministic rules --> status + checks + reason + action
-        |
-        +--> Summary cards / Orders table / Detail panel (browser)
-        |
-        v  (order facts + checks only, no customer name)
-explainOrder server function (src/lib/explain.functions.ts)
-        |  reads GOOGLE_API_KEY server-side, one bounded retry on 429/5xx
-        v
-Gemini API --> JSON { explanation, recommendedAction }
-        |
-        v
-validateModelOutput() -- rejects empty / malformed / too long / contradictory
-        |
-        +--> success: "Gemini · <model>" label
-        +--> failure: "Sample fallback" label + reason + sample text
+Fictional Order and Inventory Data
+                |
+                v
+       Deterministic Rules
+                |
+                v
+      Status + Rule Checks
+                |
+        +-------+-------+
+        |               |
+        v               v
+   Dashboard       Evaluated Facts
+                        |
+                        v
+               Server-side Function
+                        |
+                        v
+                   Gemini API
+                        |
+                        v
+                Response Validation
+                        |
+                 +------+------+
+                 |             |
+                 v             v
+             Valid Reply    AI Failure
+                 |             |
+                 v             v
+          AI Explanation   Sample Fallback
+                 |             |
+                 +------+------+
+                        |
+                        v
+               Dashboard Display
 ```
 
-### Key files
-| Path | Purpose |
-|------|---------|
-| `src/lib/orders.ts` | Sample data and the deterministic `evaluateOrder` rules. The **only** place status is decided. |
-| `src/lib/explain.ts` | Browser-safe input schema, prompt builder and model-output validation. |
-| `src/lib/explain.functions.ts` | Server function that calls Gemini. |
-| `src/components/dashboard/*` | Summary cards, table, status badge, detail sheet, AI panel. |
-| `src/routes/index.tsx` | Dashboard page. |
-| `src/lib/*.test.ts`, `src/test/*` | Automated tests. |
+## Order Status Logic
 
-### Status rules (summary)
-- **Needs review:** required data is missing or conflicting, so a shortage can't be reliably determined.
-- **On track:** available inventory covers the required quantity.
-- **At risk:** there is a shortage and no replenishment is scheduled, it arrives after the dispatch date, or it doesn't bring enough units.
+| Status | Meaning |
+|---|---|
+| **On track** | Available inventory covers the required quantity, with no inventory risk detected by the current rules. |
+| **At risk** | A shortage exists and replenishment is missing, too late, or insufficient. |
+| **Needs review** | Required information is missing, invalid, or conflicting, preventing reliable evaluation. |
 
-"Today" is a fixed reference date in `src/lib/orders.ts`, so sample results stay stable.
+The dashboard's "On track" status does not guarantee on-time delivery. It only indicates that no inventory risk was identified using the available data and implemented rules.
 
-## Setup and run
+## Technology Stack
 
-Requirements: Node.js (with npm) or Bun. The repository includes `bun.lock`.
+| Category | Technologies |
+|---|---|
+| Framework | TanStack Start, React |
+| Language | TypeScript |
+| Build tool | Vite |
+| Styling | Tailwind CSS, shadcn/ui, Radix UI |
+| Routing and data utilities | TanStack Router, TanStack Query |
+| Validation | Zod |
+| AI integration | Google Gemini API — `gemini-2.5-flash` |
+| Testing | Vitest, Testing Library, jsdom |
+| Runtime target | Cloudflare Workers |
 
-```sh
+## Project Structure
+
+```text
+src/
+├── components/
+│   └── dashboard/
+│       ├── SummaryCards
+│       ├── OrdersTable
+│       ├── OrderDetailSheet
+│       ├── StatusBadge
+│       └── AiExplanationPanel.tsx
+├── lib/
+│   ├── orders.ts
+│   ├── orders.test.ts
+│   ├── explain.ts
+│   ├── explain.functions.ts
+│   └── explain.test.ts
+├── routes/
+│   └── index.tsx
+└── test/
+    └── app-routing.test.tsx
+```
+
+- `orders.ts` contains the sample orders and deterministic status evaluation.
+- `explain.ts` defines the AI input and validates model output.
+- `explain.functions.ts` handles the server-side Gemini request.
+- `AiExplanationPanel.tsx` displays AI explanations, loading states, and fallback messages.
+- The test files cover status evaluation, AI-response validation, and application routing.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm, or Bun.
+- A GitHub repository URL for this project.
+
+### Installation
+
+Clone the repository and enter the project directory:
+
+```bash
 git clone <your-repository-url>
-cd <repository-folder>
-bun install        # or: npm install
-bun run dev        # or: npm run dev
+cd order-delay-risk-assistant
 ```
 
-Available scripts (from `package.json`):
+Install dependencies:
 
-| Script | Command |
-|--------|---------|
-| `dev` | `vite dev` |
-| `build` | `vite build` |
-| `build:dev` | `vite build --mode development` |
-| `preview` | `vite preview` |
-| `lint` | `eslint .` |
-| `format` | `prettier --write .` |
-| `test` | `vitest run` |
-| `test:watch` | `vitest` |
+```bash
+bun install
+```
 
-## Gemini API secret configuration
+Alternatively, use npm:
 
-The server function reads `GOOGLE_API_KEY` from the server environment inside its handler. The key is never sent to the browser, returned in responses or written to logs.
+```bash
+npm install
+```
 
-- **In Lovable:** add `GOOGLE_API_KEY` under **Project Settings → Secrets**.
-- **Local development:** provide `GOOGLE_API_KEY` as a server environment variable, e.g. in a local `.env` or `.dev.vars` file. Both are git-ignored.
-- **Never** prefix it with `VITE_`. That would bundle the key into browser code.
-- If the key is missing, the panel shows "AI explanations are not configured." and the sample explanation. The dashboard keeps working.
+### Run Locally
+
+Start the development server:
+
+```bash
+bun run dev
+```
+
+Or use:
+
+```bash
+npm run dev
+```
+
+Open the local URL printed in the terminal.
+
+## Gemini API Configuration
+
+The AI explanation feature uses the Google Gemini API through server-side code.
+
+1. Obtain an API key through Google AI Studio.
+2. In Lovable, add the key under **Project Settings → Secrets**.
+3. Set the secret name to `GOOGLE_API_KEY`.
+4. For local development, configure the key using a supported server-side environment mechanism.
+
+**Security considerations**
+
+- Never commit API keys or credentials.
+- Never expose the key through browser-side environment variables such as `VITE_GOOGLE_API_KEY`.
+- Keep the key in server-side secrets or environment variables.
+- Restrict API usage before making the application publicly accessible.
+
+If the AI service is unavailable or the response fails validation, the dashboard can display a sample explanation instead. The deterministic status remains unchanged.
 
 ## Testing
 
-```sh
-bun run test       # or: npm test
+Run the automated test suite:
+
+```bash
+bun run test
 ```
 
-Coverage:
-- `src/lib/orders.test.ts`: deterministic status rules for each sample case.
-- `src/lib/explain.test.ts`: rejects empty, non-JSON, incomplete, overly long and contradictory model output, delivery guarantees and status-change claims. Also checks that the AI input excludes customer names and rejects unknown statuses.
-- `src/test/app-routing.test.tsx`: routing smoke test.
+Or:
 
-### Verified results (19 Oct 2026)
-- `vitest run`: **3 test files, 18 tests passed**.
-- Manual browser check: a live Gemini call showed an explanation labelled "Gemini · gemini-2.5-flash".
-- Simulated failure (blocked request to the AI service): the panel showed "Sample fallback", "AI service could not be reached. Showing sample explanation instead." and the sample text. The order's status was unchanged.
+```bash
+npm test
+```
+
+### Verified Results
+
+**Last verified: 19 October 2026**
+
+- 3 test files passed.
+- 18 automated tests passed.
+- A live Gemini request returned an explanation labelled with the model name.
+- A simulated AI-service connection failure displayed the sample fallback.
+- The order status remained unchanged when the AI service failed.
+
+These results describe the verified prototype behavior and are not a guarantee of production readiness.
 
 ## Limitations
-- Uses fictional sample data only, with a fixed reference date.
-- No authentication, persistence, or integration with ERP or inventory systems.
-- AI explanations may be inaccurate. They are narrative only and checked with pattern-based guards, which can't catch every misleading phrasing.
-- No caching or rate limiting for Gemini calls beyond one bounded retry.
-- Not yet deployed.
 
-## Future improvements
-- Connect real order, inventory and purchase-order data sources.
-- Add user sign-in and role-based access.
-- Cache AI explanations per order version and add server-side rate limiting.
-- Support partial-shipment and alternate-SKU suggestions in the rules.
-- Add CSV export and alerting for newly at-risk orders.
-- Add end-to-end browser tests to CI.
+- Uses fictional sample data for 12 orders.
+- Does not connect to an ERP, inventory database, or purchase-order system.
+- Uses a fixed reference date to keep sample results reproducible.
+- Does not include authentication, persistent storage, or role-based access.
+- AI explanations may contain errors despite response validation.
+- Does not yet implement caching or comprehensive rate limiting.
+- Has not been deployed as a production service.
+
+## Future Improvements
+
+- Integrate real inventory, order, and purchase-order data.
+- Add authentication and role-based access control.
+- Implement server-side rate limiting and caching.
+- Add support for partial shipments and alternate-SKU suggestions.
+- Provide CSV export and alerts for newly at-risk orders.
+- Add end-to-end browser tests and continuous integration.
+
+## Project Objective
+
+This prototype demonstrates how deterministic business rules and generative AI can work together in an operations dashboard: business rules produce the decision, while AI makes the result easier to understand and act upon.
