@@ -102,3 +102,5 @@ export type ExplainResult =
 
 export type ExplainSuccess = Extract<ExplainResult, { ok: true }>;
 export const isExplainSuccess = (r: ExplainResult | undefined): r is ExplainSuccess => !!r && r.ok === true;
+export type ExplainFailure = Extract<ExplainResult, { ok: false }>;
+export const isExplainFailure = (r: ExplainResult | undefined): r is ExplainFailure => !!r && r.ok === false;

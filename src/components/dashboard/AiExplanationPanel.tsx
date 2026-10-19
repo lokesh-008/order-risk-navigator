@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { explainOrder } from "@/lib/explain.functions";
-import { toExplainInput, isExplainSuccess } from "@/lib/explain";
+import { toExplainInput, isExplainSuccess, isExplainFailure } from "@/lib/explain";
 import type { EvaluatedOrder } from "@/lib/orders";
 
 export function AiExplanationPanel({ order }: { order: EvaluatedOrder }) {
@@ -16,7 +16,7 @@ export function AiExplanationPanel({ order }: { order: EvaluatedOrder }) {
 
   const result = q.data;
   const success = isExplainSuccess(result) ? result : null;
-  const fallbackReason = q.isError ? "AI service could not be reached." : result && !isExplainSuccess(result) ? (result as { error: string }).error : null;
+  const fallbackReason = q.isError ? "AI service could not be reached." : isExplainFailure(result) ? result.error : null;
 
   return (
     <section className="rounded-md border border-dashed border-ai/40 bg-ai-soft" aria-live="polite">
