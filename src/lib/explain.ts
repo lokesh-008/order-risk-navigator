@@ -99,3 +99,8 @@ export function validateModelOutput(raw: string | null | undefined, status: Expl
 export type ExplainResult =
   | { ok: true; explanation: string; recommendedAction: string; model: string }
   | { ok: false; error: string };
+
+export type ExplainSuccess = Extract<ExplainResult, { ok: true }>;
+export const isExplainSuccess = (r: ExplainResult | undefined): r is ExplainSuccess => !!r && r.ok === true;
+export type ExplainFailure = Extract<ExplainResult, { ok: false }>;
+export const isExplainFailure = (r: ExplainResult | undefined): r is ExplainFailure => !!r && r.ok === false;
