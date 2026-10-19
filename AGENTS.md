@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Order status logic lives only in src/lib/orders.ts (evaluateOrder) and is deterministic; AI text is display-only and never sets status — keeps risk calls auditable.
