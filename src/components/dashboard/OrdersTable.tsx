@@ -28,9 +28,9 @@ export function OrdersTable({ orders, onOpen }: { orders: EvaluatedOrder[]; onOp
               onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(o))}
               className="cursor-pointer focus-visible:bg-muted focus-visible:outline-none"
             >
-              <TableCell className="font-mono text-sm font-medium">{o.orderId}</TableCell>
+              <TableCell className="whitespace-nowrap font-mono text-sm font-medium">{o.orderId}</TableCell>
               <TableCell>
-                <div className="text-sm">{o.itemName}</div>
+                <div className="min-w-[160px] text-sm">{o.itemName}</div>
                 <div className="font-mono text-xs text-muted-foreground">{o.sku}</div>
               </TableCell>
               <TableCell className="text-right font-mono">{fmt(o.quantityRequired)}</TableCell>
