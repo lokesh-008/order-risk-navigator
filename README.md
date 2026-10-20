@@ -87,34 +87,6 @@ The dashboard's "On track" status does not guarantee on-time delivery. It only i
 | Testing | Vitest, Testing Library, jsdom |
 | Runtime target | Cloudflare Workers |
 
-## Project Structure
-
-```text
-src/
-├── components/
-│   └── dashboard/
-│       ├── SummaryCards
-│       ├── OrdersTable
-│       ├── OrderDetailSheet
-│       ├── StatusBadge
-│       └── AiExplanationPanel.tsx
-├── lib/
-│   ├── orders.ts
-│   ├── orders.test.ts
-│   ├── explain.ts
-│   ├── explain.functions.ts
-│   └── explain.test.ts
-├── routes/
-│   └── index.tsx
-└── test/
-    └── app-routing.test.tsx
-```
-
-- `orders.ts` contains the sample orders and deterministic status evaluation.
-- `explain.ts` defines the AI input and validates model output.
-- `explain.functions.ts` handles the server-side Gemini request.
-- `AiExplanationPanel.tsx` displays AI explanations, loading states, and fallback messages.
-- The test files cover status evaluation, AI-response validation, and application routing.
 
 ## Getting Started
 
